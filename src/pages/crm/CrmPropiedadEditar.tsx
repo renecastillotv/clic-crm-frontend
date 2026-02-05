@@ -92,7 +92,9 @@ import {
   type CategoriaPropiedad,
   type FeatureWithTenantStatus,
   type Moneda,
-  type ContenidoRelacion
+  type ContenidoRelacion,
+  getPortalesCatalogoPublic,
+  type PortalCatalogo,
 } from '../../services/api';
 import {
   getPropiedadCrm,
@@ -242,6 +244,7 @@ export default function CrmPropiedadEditar() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>('basica');
+  const [portalesCatalogo, setPortalesCatalogo] = useState<PortalCatalogo[]>([]);
   const [propiedad, setPropiedad] = useState<Propiedad | null>(null);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const imageUploaderRef = useRef<(() => PendingImage[]) | null>(null);
@@ -433,11 +436,7 @@ export default function CrmPropiedadEditar() {
     connect: true,
     connect_terminos: '',
     connect_comision: null as number | null,
-    portales: {
-      mercadolibre: true,
-      easybroker: true,
-      corotos: true,
-    } as Record<string, boolean>,
+    portales: {} as Record<string, boolean>,
   });
 
   // Ref para mantener el valor actual del form (evita closures stale)
@@ -445,6 +444,25 @@ export default function CrmPropiedadEditar() {
   useEffect(() => {
     formRef.current = form;
   }, [form]);
+
+  // Cargar catálogo de portales
+  useEffect(() => {
+    getPortalesCatalogoPublic()
+      .then(catalogo => {
+        setPortalesCatalogo(catalogo);
+        // Para propiedad nueva, inicializar portales con defaults según rol del usuario
+        if (!isEditing && catalogo.length > 0) {
+          const userRoleCodes = tenantActual?.roles?.map((r: any) => r.codigo) || [];
+          const defaultPortales: Record<string, boolean> = {};
+          catalogo.forEach(portal => {
+            const autoEnabled = portal.roles_auto_activo?.some((rc: string) => userRoleCodes.includes(rc));
+            defaultPortales[portal.codigo] = autoEnabled || false;
+          });
+          setForm(prev => ({ ...prev, portales: { ...defaultPortales, ...prev.portales } }));
+        }
+      })
+      .catch(err => console.error('Error al cargar portales:', err));
+  }, [isEditing, tenantActual]);
 
   // Configurar header
   const tienePermiso = isEditing ? puedeEditar('propiedades') : puedeCrear('propiedades');
@@ -637,7 +655,7 @@ export default function CrmPropiedadEditar() {
           connect: (propiedadData as any).connect !== undefined ? (propiedadData as any).connect : true,
           connect_terminos: (propiedadData as any).connect_terminos || '',
           connect_comision: (propiedadData as any).connect_comision || null,
-          portales: (propiedadData as any).portales || { mercadolibre: true, easybroker: true, corotos: true },
+          portales: (propiedadData as any).portales || {},
         });
 
         // Cargar imágenes existentes en pendingImages como "uploaded"
@@ -4837,69 +4855,47 @@ export default function CrmPropiedadEditar() {
                 Selecciona en qué portales externos quieres publicar esta propiedad. Las integraciones deben estar configuradas previamente.
               </p>
 
-              <div className="portales-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '16px',
-                marginTop: '20px'
-              }}>
-                {/* MercadoLibre */}
-                <div className={`portal-card ${form.portales.mercadolibre ? 'active' : ''}`}>
-                  <div className="portal-header">
-                    <div className="portal-logo" style={{ background: '#FFE600', color: '#333' }}>ML</div>
-                    <div className="portal-info">
-                      <h4>MercadoLibre</h4>
-                      <span className="portal-status">Integración pendiente</span>
-                    </div>
-                  </div>
-                  <ToggleSwitch
-                    label="Publicar en MercadoLibre"
-                    checked={form.portales.mercadolibre}
-                    onChange={(checked) => setForm(prev => ({
-                      ...prev,
-                      portales: { ...prev.portales, mercadolibre: checked }
-                    }))}
-                  />
+              {portalesCatalogo.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', marginTop: '20px' }}>
+                  <p style={{ margin: 0, color: '#64748b' }}>No hay portales configurados.</p>
                 </div>
-
-                {/* EasyBroker */}
-                <div className={`portal-card ${form.portales.easybroker ? 'active' : ''}`}>
-                  <div className="portal-header">
-                    <div className="portal-logo" style={{ background: '#2563eb', color: '#fff' }}>EB</div>
-                    <div className="portal-info">
-                      <h4>EasyBroker</h4>
-                      <span className="portal-status">Integración pendiente</span>
-                    </div>
-                  </div>
-                  <ToggleSwitch
-                    label="Publicar en EasyBroker"
-                    checked={form.portales.easybroker}
-                    onChange={(checked) => setForm(prev => ({
-                      ...prev,
-                      portales: { ...prev.portales, easybroker: checked }
-                    }))}
-                  />
+              ) : (
+                <div className="portales-grid" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '16px',
+                  marginTop: '20px'
+                }}>
+                  {portalesCatalogo.map((portal) => {
+                    const hex = portal.color.replace('#', '');
+                    const r = parseInt(hex.substr(0, 2), 16);
+                    const g = parseInt(hex.substr(2, 2), 16);
+                    const b = parseInt(hex.substr(4, 2), 16);
+                    const textColor = (r * 299 + g * 587 + b * 114) / 1000 > 155 ? '#333' : '#fff';
+                    return (
+                      <div key={portal.codigo} className={`portal-card ${form.portales[portal.codigo] ? 'active' : ''}`}>
+                        <div className="portal-header">
+                          <div className="portal-logo" style={{ background: portal.color, color: textColor }}>
+                            {portal.icono || portal.codigo.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="portal-info">
+                            <h4>{portal.nombre}</h4>
+                            <span className="portal-status">{portal.descripcion || 'Integración pendiente'}</span>
+                          </div>
+                        </div>
+                        <ToggleSwitch
+                          label={`Publicar en ${portal.nombre}`}
+                          checked={form.portales[portal.codigo] || false}
+                          onChange={(checked) => setForm(prev => ({
+                            ...prev,
+                            portales: { ...prev.portales, [portal.codigo]: checked }
+                          }))}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* Corotos */}
-                <div className={`portal-card ${form.portales.corotos ? 'active' : ''}`}>
-                  <div className="portal-header">
-                    <div className="portal-logo" style={{ background: '#0ea5e9', color: '#fff' }}>CO</div>
-                    <div className="portal-info">
-                      <h4>Corotos</h4>
-                      <span className="portal-status">Integración pendiente</span>
-                    </div>
-                  </div>
-                  <ToggleSwitch
-                    label="Publicar en Corotos"
-                    checked={form.portales.corotos}
-                    onChange={(checked) => setForm(prev => ({
-                      ...prev,
-                      portales: { ...prev.portales, corotos: checked }
-                    }))}
-                  />
-                </div>
-              </div>
+              )}
 
               <div style={{
                 marginTop: '24px',

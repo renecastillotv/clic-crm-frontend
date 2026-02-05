@@ -64,6 +64,7 @@ import AdminRolPermisos from './pages/admin/AdminRolPermisos';
 import AdminRolFieldPermisos from './pages/admin/AdminRolFieldPermisos';
 import AdminUbicaciones from './pages/admin/AdminUbicaciones';
 import AdminTagsGlobal from './pages/admin/AdminTagsGlobal';
+import AdminPortales from './pages/admin/AdminPortales';
 import AdminMemberships from './pages/admin/AdminMemberships';
 import AdminUsage from './pages/admin/AdminUsage';
 
@@ -338,6 +339,7 @@ function AppRoutes() {
                 <Route path="roles/:rolId/campos/:moduloId" element={<AdminRolFieldPermisos />} />
                 <Route path="ubicaciones" element={<AdminUbicaciones />} />
                 <Route path="tags-global" element={<AdminTagsGlobal />} />
+                <Route path="portales" element={<AdminPortales />} />
                 <Route path="memberships" element={<AdminMemberships />} />
                 <Route path="usage" element={<AdminUsage />} />
       </Route>

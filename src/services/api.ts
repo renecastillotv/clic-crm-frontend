@@ -8089,6 +8089,102 @@ export async function getTagGlobalTipos(token?: string | null): Promise<string[]
 }
 
 // ============================================================================
+// PORTALES CATÁLOGO
+// ============================================================================
+
+export interface PortalCatalogo {
+  id: string;
+  codigo: string;
+  nombre: string;
+  descripcion: string | null;
+  logo_url: string | null;
+  icono: string | null;
+  color: string;
+  roles_auto_activo: string[];
+  activo: boolean;
+  orden: number;
+}
+
+export interface CreatePortalCatalogoData {
+  codigo: string;
+  nombre: string;
+  descripcion?: string | null;
+  logo_url?: string | null;
+  icono?: string | null;
+  color?: string;
+  roles_auto_activo?: string[];
+  activo?: boolean;
+  orden?: number;
+}
+
+/** Portales activos (público, para CRM) */
+export async function getPortalesCatalogoPublic(): Promise<PortalCatalogo[]> {
+  const response = await apiFetch('/catalogos/portales');
+  return response.json();
+}
+
+/** [ADMIN] Lista todos los portales */
+export async function getPortalesCatalogoAdmin(
+  filters?: { activo?: boolean; search?: string },
+  token?: string | null
+): Promise<PortalCatalogo[]> {
+  let url = '/admin/portales-catalogo';
+  const params: string[] = [];
+  if (filters?.activo !== undefined) params.push(`activo=${filters.activo}`);
+  if (filters?.search) params.push(`search=${encodeURIComponent(filters.search)}`);
+  if (params.length > 0) url += `?${params.join('&')}`;
+  const response = await apiFetch(url, {}, token);
+  const result = await response.json();
+  return result.portales;
+}
+
+/** [ADMIN] Crear portal */
+export async function createPortalCatalogo(
+  data: CreatePortalCatalogoData,
+  token?: string | null
+): Promise<PortalCatalogo> {
+  const response = await apiFetch('/admin/portales-catalogo', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token);
+  const result = await response.json();
+  return result.portal;
+}
+
+/** [ADMIN] Actualizar portal */
+export async function updatePortalCatalogoApi(
+  id: string,
+  data: Partial<CreatePortalCatalogoData>,
+  token?: string | null
+): Promise<PortalCatalogo> {
+  const response = await apiFetch(`/admin/portales-catalogo/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token);
+  const result = await response.json();
+  return result.portal;
+}
+
+/** [ADMIN] Eliminar portal */
+export async function deletePortalCatalogoApi(id: string, token?: string | null): Promise<void> {
+  await apiFetch(`/admin/portales-catalogo/${id}`, { method: 'DELETE' }, token);
+}
+
+/** [ADMIN] Toggle activo */
+export async function togglePortalCatalogoApi(
+  id: string,
+  activo: boolean,
+  token?: string | null
+): Promise<PortalCatalogo> {
+  const response = await apiFetch(`/admin/portales-catalogo/${id}/toggle`, {
+    method: 'POST',
+    body: JSON.stringify({ activo }),
+  }, token);
+  const result = await response.json();
+  return result.portal;
+}
+
+// ============================================================================
 // PLANES DE PAGO
 // ============================================================================
 
