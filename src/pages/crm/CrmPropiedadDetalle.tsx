@@ -1241,10 +1241,12 @@ const styles = `
   .badges-row {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
   }
 
-  .badge {
+  .badges-row .badge {
+    position: static !important;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -1252,6 +1254,8 @@ const styles = `
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
+    width: auto !important;
+    height: auto !important;
   }
 
   .badge-proyecto {
@@ -1260,15 +1264,13 @@ const styles = `
   }
 
   .badge-destacada {
-    position: static !important;
-    background: rgba(245, 158, 11, 0.12);
-    color: #d97706;
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
   }
 
   .badge-exclusiva {
-    position: static !important;
-    background: rgba(98, 54, 255, 0.12);
-    color: #6236FF;
+    background: rgba(98, 54, 255, 0.12) !important;
+    color: #6236FF !important;
   }
 
   .etiquetas-row {
