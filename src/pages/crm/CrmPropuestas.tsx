@@ -267,7 +267,7 @@ export default function CrmPropuestas() {
       {/* Toolbar */}
       <div className="toolbar">
         <div className="search-box">
-          <Search className="search-icon" size={16} />
+          <Search className="search-icon" size={18} />
           <input
             type="text"
             placeholder="Buscar propuestas..."
@@ -641,35 +641,6 @@ const styles = `
     align-items: center;
   }
 
-  .search-box {
-    flex: 1;
-    min-width: 240px;
-    position: relative;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-  }
-
-  .search-box input {
-    width: 100%;
-    padding: 10px 14px 10px 38px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    background: white;
-    transition: all 0.2s;
-  }
-
-  .search-box input:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-  }
 
   .filter-select {
     padding: 10px 14px;

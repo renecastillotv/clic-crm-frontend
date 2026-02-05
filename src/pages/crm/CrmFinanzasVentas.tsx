@@ -1167,43 +1167,13 @@ export default function CrmFinanzasVentas() {
         marginBottom: '24px',
         flexWrap: 'nowrap'
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          background: 'white',
-          border: '1px solid #e2e8f0',
-          borderRadius: '12px',
-          padding: '12px 16px',
-          flex: '0 1 400px',
-          minWidth: '300px',
-          transition: 'all 0.2s',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = '#667eea';
-          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = '#e2e8f0';
-          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
-        }}
-        >
-          <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
+        <div className="search-box">
+          <Search className="search-icon" size={18} />
           <input
             type="text"
             placeholder="Buscar..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            style={{
-              border: 'none',
-              outline: 'none',
-              background: 'transparent',
-              fontSize: '0.9375rem',
-              color: '#1e293b',
-              width: '100%',
-              flex: 1
-            }}
           />
         </div>
 

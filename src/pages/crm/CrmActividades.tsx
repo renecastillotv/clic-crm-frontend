@@ -608,7 +608,7 @@ export default function CrmActividades() {
         {/* Barra de Búsqueda y Filtros */}
         <div className="filters-bar">
           <div className="search-box">
-            <Search className="search-icon w-5 h-5" />
+            <Search className="search-icon" size={18} />
             <input
               type="text"
               placeholder="Buscar actividades..."

@@ -418,22 +418,39 @@
   opacity: 0.7;
 }
 
-.crm-search-wrapper {
-  position: relative;
+.search-box {
   flex: 1;
+  min-width: 200px;
+  position: relative;
 }
 
-.crm-search-icon {
+.search-box .search-icon {
   position: absolute;
-  left: var(--space-3, 12px);
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--premium-text-soft, #94A3B8);
+  color: var(--premium-text-soft, #94a3b8);
   pointer-events: none;
 }
 
-.crm-search-input {
-  padding-left: var(--space-10, 40px);
+.search-box input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border: 1.5px solid var(--premium-card-border, #e2e8f0);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  background: var(--premium-card-bg, white);
+  transition: border-color 0.2s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.search-box input:focus {
+  border-color: var(--premium-primary, #2563eb);
+}
+
+.search-box input::placeholder {
+  color: var(--premium-text-soft, #94a3b8);
 }
 
 /* ============================================================================

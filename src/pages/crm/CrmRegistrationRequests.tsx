@@ -436,7 +436,7 @@ export default function CrmRegistrationRequests() {
       {/* Filters */}
       <div className="filters-bar">
         <div className="search-box">
-          <Search size={16} />
+          <Search className="search-icon" size={18} />
           <input
             type="text"
             placeholder="Buscar por nombre o intención..."

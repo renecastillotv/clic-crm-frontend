@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePageHeader } from '../../layouts/CrmLayout';
 import {
@@ -311,7 +312,7 @@ export default function CrmContactos() {
       {/* Barra de filtros */}
       <div className="filters-bar">
         <div className="search-box">
-          <span className="search-icon">{Icons.search}</span>
+          <Search className="search-icon" size={18} />
           <input
             type="text"
             placeholder="Buscar por nombre, email o teléfono..."
@@ -681,35 +682,6 @@ const styles = `
     flex-wrap: wrap;
   }
 
-  .search-box {
-    flex: 1;
-    min-width: 280px;
-    position: relative;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-  }
-
-  .search-box input {
-    width: 100%;
-    padding: 12px 16px 12px 44px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    background: white;
-    transition: all 0.2s;
-  }
-
-  .search-box input:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
 
   .filters-right {
     display: flex;

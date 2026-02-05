@@ -2411,7 +2411,7 @@ export default function CrmContenido() {
       {!['categorias', 'relacionar'].includes(activeTab) && (
         <div className="filters-bar">
           <div className="search-box">
-            <span className="search-icon">{Icons.search}</span>
+            <LucideIcons.Search className="search-icon" size={18} />
             <input
               type="text"
               placeholder={`Buscar ${activeTab}...`}
@@ -2481,7 +2481,7 @@ export default function CrmContenido() {
       {activeTab === 'categorias' && (
         <div className="filters-bar">
           <div className="search-box">
-            <span className="search-icon">{Icons.search}</span>
+            <LucideIcons.Search className="search-icon" size={18} />
             <input
               type="text"
               placeholder="Buscar categorías..."

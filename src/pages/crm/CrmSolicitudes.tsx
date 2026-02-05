@@ -573,7 +573,7 @@ export default function CrmSolicitudes() {
       {/* Barra de filtros */}
       <div className="filters-bar">
         <div className="search-box">
-          <Search className="search-icon w-4 h-4" />
+          <Search className="search-icon" size={18} />
           <input
             type="text"
             placeholder="Buscar solicitudes..."

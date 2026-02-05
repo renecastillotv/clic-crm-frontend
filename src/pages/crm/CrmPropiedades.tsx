@@ -437,7 +437,7 @@ export default function CrmPropiedades() {
       {/* Barra de filtros */}
       <div className="filters-bar">
         <div className="search-box">
-          <span className="search-icon"><Search size={18} /></span>
+          <Search className="search-icon" size={18} />
           <input
             type="text"
             placeholder="Buscar propiedades..."
