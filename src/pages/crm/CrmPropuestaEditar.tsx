@@ -1366,8 +1366,8 @@ export default function CrmPropuestaEditar() {
         const contactPhone = hasCaptador ? prop.captador_telefono : prop.tenant_telefono;
 
         return (
-          <div className="preview-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) { setPreviewPropiedad(null); setPreviewImageIndex(0); } }}>
-            <div className="preview-panel">
+          <div className="prop-detail-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) { setPreviewPropiedad(null); setPreviewImageIndex(0); } }}>
+            <div className="prop-detail-panel">
               <div className="preview-header">
                 <h3>Detalles de la Propiedad</h3>
                 <button className="btn-close" onClick={() => { setPreviewPropiedad(null); setPreviewImageIndex(0); }}>
@@ -1884,7 +1884,7 @@ export default function CrmPropuestaEditar() {
               </div>
 
               {/* Acciones */}
-              <div className="preview-actions">
+              <div className="prop-detail-actions">
                 <button
                   className={`btn-add-propuesta ${selectedPropiedades.includes(prop.id) ? 'selected' : ''}`}
                   onClick={() => {
@@ -3755,9 +3755,9 @@ const styles = `
   }
 
   /* ============================================
-     PANEL LATERAL DE PREVIEW DE PROPIEDAD
+     PANEL LATERAL DE DETALLE DE PROPIEDAD
      ============================================ */
-  .preview-overlay {
+  .prop-detail-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -3765,23 +3765,25 @@ const styles = `
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
+    align-items: stretch;
     justify-content: flex-end;
-    z-index: 1000;
-    animation: fadeIn 0.2s ease;
+    z-index: 9999;
+    padding: 0;
+    backdrop-filter: none;
   }
 
-  .preview-panel {
+  .prop-detail-panel {
     width: 560px;
     max-width: 100%;
     height: 100%;
     background: white;
     display: flex;
     flex-direction: column;
-    animation: slideIn 0.3s ease;
+    animation: propDetailSlideIn 0.3s ease;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
   }
 
-  @keyframes slideIn {
+  @keyframes propDetailSlideIn {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
   }
@@ -4968,7 +4970,7 @@ const styles = `
     color: #0f172a;
   }
 
-  .preview-actions {
+  .prop-detail-actions {
     padding: 16px 20px;
     border-top: 1px solid #e2e8f0;
     background: #f8fafc;
@@ -5005,7 +5007,7 @@ const styles = `
   }
 
   @media (max-width: 500px) {
-    .preview-panel {
+    .prop-detail-panel {
       width: 100%;
     }
   }
