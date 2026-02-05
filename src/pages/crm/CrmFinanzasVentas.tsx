@@ -3318,7 +3318,8 @@ export default function CrmFinanzasVentas() {
 
             {importResult && (
               <div style={{ padding: '24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+                {/* Main stats row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                   <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                     <div style={{ fontSize: '28px', fontWeight: '700', color: '#16a34a' }}>{importResult.importadas}</div>
                     <div style={{ fontSize: '13px', color: '#64748b' }}>Importadas</div>
@@ -3327,11 +3328,58 @@ export default function CrmFinanzasVentas() {
                     <div style={{ fontSize: '28px', fontWeight: '700', color: importResult.errores.length > 0 ? '#dc2626' : '#64748b' }}>{importResult.errores.length}</div>
                     <div style={{ fontSize: '13px', color: '#64748b' }}>Errores</div>
                   </div>
-                  <div style={{ background: '#f0f9ff', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#2563eb' }}>{importResult.contactos_creados}</div>
-                    <div style={{ fontSize: '13px', color: '#64748b' }}>Contactos creados</div>
+                  <div style={{ background: importResult.omitidas_duplicadas > 0 ? '#fffbeb' : '#f1f5f9', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: importResult.omitidas_duplicadas > 0 ? '#d97706' : '#64748b' }}>{importResult.omitidas_duplicadas}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>Duplicadas</div>
                   </div>
                 </div>
+
+                {/* Detail stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+                  <div style={{ background: '#f0f9ff', borderRadius: '12px', padding: '14px' }}>
+                    <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>Contactos</div>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
+                      <span style={{ color: '#2563eb', fontWeight: '600' }}>{importResult.contactos_creados} creados</span>
+                      <span style={{ color: '#64748b' }}>{importResult.contactos_existentes} existentes</span>
+                    </div>
+                  </div>
+                  <div style={{ background: '#f0f9ff', borderRadius: '12px', padding: '14px' }}>
+                    <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>Propiedades</div>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
+                      <span style={{ color: '#16a34a', fontWeight: '600' }}>{importResult.propiedades_vinculadas} vinculadas</span>
+                      <span style={{ color: '#64748b' }}>{importResult.propiedades_externas} externas</span>
+                    </div>
+                  </div>
+                  <div style={{ background: '#f0f9ff', borderRadius: '12px', padding: '14px' }}>
+                    <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>Usuarios cerradores</div>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
+                      <span style={{ color: '#16a34a', fontWeight: '600' }}>{importResult.usuarios_resueltos} resueltos</span>
+                      <span style={{ color: importResult.usuarios_no_resueltos.length > 0 ? '#dc2626' : '#64748b', fontWeight: importResult.usuarios_no_resueltos.length > 0 ? '600' : '400' }}>
+                        {importResult.usuarios_no_resueltos.length} sin resolver
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ background: '#f5f3ff', borderRadius: '12px', padding: '14px' }}>
+                    <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>Comisiones</div>
+                    <div style={{ fontSize: '13px', color: '#7c3aed', fontWeight: '600' }}>{importResult.comisiones_creadas} generadas</div>
+                  </div>
+                </div>
+
+                {/* Usuarios no resueltos */}
+                {importResult.usuarios_no_resueltos.length > 0 && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#d97706' }}>
+                      Usuarios no resueltos ({importResult.usuarios_no_resueltos.length})
+                    </h4>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {importResult.usuarios_no_resueltos.map((u, i) => (
+                        <span key={i} style={{ fontSize: '12px', padding: '4px 10px', background: '#fef2f2', color: '#dc2626', borderRadius: '20px' }}>
+                          {u}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {importResult.warnings.length > 0 && (
                   <div style={{ marginBottom: '16px' }}>

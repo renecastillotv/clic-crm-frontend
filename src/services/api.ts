@@ -8995,10 +8995,16 @@ export async function generateSeoStatAI(
 export interface ImportVentasResult {
   total: number;
   importadas: number;
+  omitidas_duplicadas: number;
   errores: { fila: number; numero_cierre: string; error: string }[];
   warnings: { fila: number; numero_cierre: string; warning: string }[];
   contactos_creados: number;
   contactos_existentes: number;
+  propiedades_vinculadas: number;
+  propiedades_externas: number;
+  usuarios_resueltos: number;
+  usuarios_no_resueltos: string[];
+  comisiones_creadas: number;
 }
 
 export interface ImportVentasPreview {
