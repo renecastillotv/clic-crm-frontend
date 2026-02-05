@@ -948,12 +948,8 @@ export default function CrmPropuestaEditar() {
             </div>
           ) : (
             <div className="propiedades-grid">
-                    {/* Ordenar: 1) Seleccionadas, 2) Destacadas, 3) Resto */}
+                    {/* Ordenar: Destacadas primero, resto en orden original */}
                     {[...propiedades].sort((a, b) => {
-                      const aSelected = selectedPropiedades.includes(a.id) ? 1 : 0;
-                      const bSelected = selectedPropiedades.includes(b.id) ? 1 : 0;
-                      if (aSelected !== bSelected) return bSelected - aSelected;
-
                       const aDestacada = a.destacada ? 1 : 0;
                       const bDestacada = b.destacada ? 1 : 0;
                       if (aDestacada !== bDestacada) return bDestacada - aDestacada;
@@ -1369,8 +1365,8 @@ export default function CrmPropuestaEditar() {
         const contactPhone = hasCaptador ? prop.captador_telefono : prop.tenant_telefono;
 
         return (
-          <div className="preview-overlay" onClick={() => { setPreviewPropiedad(null); setPreviewImageIndex(0); }}>
-            <div className="preview-panel" onClick={(e) => e.stopPropagation()}>
+          <div className="preview-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) { setPreviewPropiedad(null); setPreviewImageIndex(0); } }}>
+            <div className="preview-panel">
               <div className="preview-header">
                 <h3>Detalles de la Propiedad</h3>
                 <button className="btn-close" onClick={() => { setPreviewPropiedad(null); setPreviewImageIndex(0); }}>
@@ -3725,7 +3721,7 @@ const styles = `
   .prop-checkbox {
     position: absolute;
     top: 8px;
-    left: 8px;
+    right: 8px;
     width: 18px;
     height: 18px;
     background: white;
