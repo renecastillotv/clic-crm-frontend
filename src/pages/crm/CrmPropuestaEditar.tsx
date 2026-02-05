@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePageHeader } from '../../layouts/CrmLayout';
@@ -1339,8 +1340,8 @@ export default function CrmPropuestaEditar() {
         </div>
       )}
 
-      {/* Panel lateral de preview de propiedad */}
-      {previewPropiedad && (() => {
+      {/* Panel lateral de preview de propiedad (Portal para escapar stacking context de crm-content) */}
+      {previewPropiedad && ReactDOM.createPortal((() => {
         const prop = previewPropiedad as any;
         // Construir array de imágenes para el carrusel
         const allImages: string[] = [];
@@ -1906,7 +1907,7 @@ export default function CrmPropuestaEditar() {
             </div>
           </div>
         );
-      })()}
+      })(), document.body)}
 
       {/* Modal de Inventario de Unidades */}
       {showInventarioModal && (
@@ -2647,17 +2648,17 @@ const styles = `
   .search-box input {
     width: 100%;
     padding: 10px 14px 10px 38px;
-    border: 1px solid #e2e8f0;
+    border: 1.5px solid #e2e8f0;
     border-radius: 8px;
     font-size: 0.9rem;
     background: white;
-    transition: all 0.2s;
+    transition: border-color 0.2s;
+    outline: none;
+    box-sizing: border-box;
   }
 
   .search-box input:focus {
-    outline: none;
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 
   .filter-select {
@@ -2733,7 +2734,7 @@ const styles = `
 
   .prop-operacion {
     position: absolute;
-    top: 8px;
+    bottom: 8px;
     right: 8px;
     padding: 3px 8px;
     background: #2563eb;
