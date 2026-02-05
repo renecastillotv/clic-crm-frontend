@@ -8988,3 +8988,53 @@ export async function generateSeoStatAI(
   return response.json();
 }
 
+// ============================================================================
+// IMPORTACIÓN DE VENTAS (CSV)
+// ============================================================================
+
+export interface ImportVentasResult {
+  total: number;
+  importadas: number;
+  errores: { fila: number; numero_cierre: string; error: string }[];
+  warnings: { fila: number; numero_cierre: string; warning: string }[];
+  contactos_creados: number;
+  contactos_existentes: number;
+}
+
+export interface ImportVentasPreview {
+  total_filas: number;
+  contactos_nuevos: string[];
+  contactos_existentes: string[];
+  usuarios_encontrados: string[];
+  usuarios_no_encontrados: string[];
+  propiedades_vinculables: number;
+  propiedades_externas: number;
+  estados_encontrados: Record<string, number>;
+}
+
+export async function previewImportVentas(
+  tenantId: string,
+  csvContent: string,
+  token?: string | null
+): Promise<ImportVentasPreview> {
+  const response = await apiFetch('/import/ventas/preview', {
+    method: 'POST',
+    body: JSON.stringify({ tenant_id: tenantId, csv_content: csvContent }),
+  }, token);
+  const json = await response.json();
+  return json.data;
+}
+
+export async function importarVentasCSV(
+  tenantId: string,
+  csvContent: string,
+  token?: string | null
+): Promise<ImportVentasResult> {
+  const response = await apiFetch('/import/ventas', {
+    method: 'POST',
+    body: JSON.stringify({ tenant_id: tenantId, csv_content: csvContent }),
+  }, token);
+  const json = await response.json();
+  return json.data;
+}
+

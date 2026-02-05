@@ -41,6 +41,8 @@ import {
   getSolicitudes,
   getPropuestas,
   registrarCobroEmpresa,
+  previewImportVentas,
+  importarVentasCSV,
   Venta,
   VentaFiltros,
   EstadoVenta,
@@ -51,6 +53,8 @@ import {
   Comision,
   UnidadProyecto,
   Solicitud,
+  ImportVentasPreview,
+  ImportVentasResult,
 } from '../../services/api';
 import { exportVentasToCSV, exportVentasToExcel } from '../../utils/exportUtils';
 import {
@@ -77,6 +81,8 @@ import {
   Image as ImageIcon,
   ChevronLeft,
   ChevronRight,
+  Upload,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function CrmFinanzasVentas() {
@@ -127,6 +133,15 @@ export default function CrmFinanzasVentas() {
   const [comisionData, setComisionData] = useState<{ montoTotal: number; montoPagado: number } | null>(null);
   const [loadingComision, setLoadingComision] = useState(false);
   const [loadingRegistroCobro, setLoadingRegistroCobro] = useState(false);
+
+  // Estado para importación CSV
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importPreview, setImportPreview] = useState<ImportVentasPreview | null>(null);
+  const [importResult, setImportResult] = useState<ImportVentasResult | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [csvContent, setCsvContent] = useState<string>('');
+  const csvInputRef = React.useRef<HTMLInputElement>(null);
 
   // Estado para unidades de proyecto
   const [unidadesProyecto, setUnidadesProyecto] = useState<UnidadProyecto[]>([]);
@@ -213,6 +228,53 @@ export default function CrmFinanzasVentas() {
     }
   };
 
+  // Handler para importar CSV
+  const handleCSVFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = ''; // Reset para permitir re-selección
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const content = event.target?.result as string;
+      setCsvContent(content);
+      setImportPreview(null);
+      setImportResult(null);
+      setShowImportModal(true);
+      setLoadingPreview(true);
+
+      try {
+        const token = await getToken();
+        const preview = await previewImportVentas(tenantActual!.id, content, token);
+        setImportPreview(preview);
+      } catch (err) {
+        console.error('Error previewing import:', err);
+        setError('Error al analizar el archivo CSV');
+        setShowImportModal(false);
+      } finally {
+        setLoadingPreview(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleConfirmImport = async () => {
+    if (!tenantActual?.id || !csvContent) return;
+    setImporting(true);
+    try {
+      const token = await getToken();
+      const result = await importarVentasCSV(tenantActual.id, csvContent, token);
+      setImportResult(result);
+      // Recargar ventas
+      cargarVentas();
+    } catch (err) {
+      console.error('Error importing ventas:', err);
+      setError('Error al importar ventas');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   // Configurar header de la página - simplificado
   useEffect(() => {
     setPageHeader({
@@ -293,8 +355,16 @@ export default function CrmFinanzasVentas() {
               </div>
             )}
           </div>
-          <button 
-            className="btn-primary" 
+          <button
+            className="btn-secondary"
+            onClick={() => csvInputRef.current?.click()}
+            style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Upload className="w-4 h-4" />
+            Importar CSV
+          </button>
+          <button
+            className="btn-primary"
             onClick={() => openModal()}
             style={{ whiteSpace: 'nowrap' }}
           >
@@ -3126,6 +3196,193 @@ export default function CrmFinanzasVentas() {
         propiedades={propiedadesOpcionesSolicitud}
         solicitudTitulo={solicitudSeleccionadaTitulo}
       />
+
+      {/* Hidden CSV file input */}
+      <input
+        ref={csvInputRef}
+        type="file"
+        accept=".csv"
+        style={{ display: 'none' }}
+        onChange={handleCSVFileSelect}
+      />
+
+      {/* Modal de importación CSV */}
+      {showImportModal && (
+        <div className="modal-overlay" onClick={() => !importing && setShowImportModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', maxHeight: '80vh', overflow: 'auto' }}>
+            <div className="modal-header">
+              <h3>{importResult ? 'Resultado de Importación' : 'Importar Ventas desde CSV'}</h3>
+              <button className="modal-close" onClick={() => !importing && setShowImportModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {loadingPreview && (
+              <div style={{ padding: '40px', textAlign: 'center' }}>
+                <Loader2 className="w-8 h-8" style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+                <p style={{ color: '#64748b' }}>Analizando archivo CSV...</p>
+              </div>
+            )}
+
+            {importPreview && !importResult && (
+              <div style={{ padding: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                  <div style={{ background: '#f0f9ff', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#2563eb' }}>{importPreview.total_filas}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>Ventas en archivo</div>
+                  </div>
+                  <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#16a34a' }}>{importPreview.propiedades_vinculables}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>Propiedades vinculables</div>
+                  </div>
+                </div>
+
+                {/* Contactos */}
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Contactos</h4>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <span style={{ fontSize: '13px', color: '#16a34a' }}>
+                      {importPreview.contactos_existentes.length} existentes
+                    </span>
+                    <span style={{ fontSize: '13px', color: '#2563eb' }}>
+                      {importPreview.contactos_nuevos.length} nuevos (se crearán)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Usuarios */}
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Usuarios Cerradores</h4>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {importPreview.usuarios_encontrados.map(u => (
+                      <span key={u} style={{ fontSize: '12px', padding: '4px 10px', background: '#f0fdf4', color: '#16a34a', borderRadius: '20px' }}>
+                        <CheckCircle className="w-3 h-3" style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                        {u}
+                      </span>
+                    ))}
+                    {importPreview.usuarios_no_encontrados.map(u => (
+                      <span key={u} style={{ fontSize: '12px', padding: '4px 10px', background: '#fef2f2', color: '#dc2626', borderRadius: '20px' }}>
+                        <AlertTriangle className="w-3 h-3" style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                        {u}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Estados */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Estados de Venta</h4>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {Object.entries(importPreview.estados_encontrados).map(([estado, count]) => (
+                      <span key={estado} style={{ fontSize: '12px', padding: '4px 10px', background: '#f1f5f9', borderRadius: '20px' }}>
+                        {estado}: {count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {importPreview.usuarios_no_encontrados.length > 0 && (
+                  <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '12px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <AlertTriangle className="w-4 h-4" style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+                    <p style={{ fontSize: '13px', color: '#92400e', margin: 0 }}>
+                      Los usuarios no encontrados se importarán con el campo cerrador vacío. Puedes asignarlos manualmente después.
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button className="btn-secondary" onClick={() => setShowImportModal(false)}>
+                    Cancelar
+                  </button>
+                  <button
+                    className="btn-primary"
+                    onClick={handleConfirmImport}
+                    disabled={importing}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    {importing ? (
+                      <>
+                        <Loader2 className="w-4 h-4" style={{ animation: 'spin 1s linear infinite' }} />
+                        Importando...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        Importar {importPreview.total_filas} ventas
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {importResult && (
+              <div style={{ padding: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+                  <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#16a34a' }}>{importResult.importadas}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>Importadas</div>
+                  </div>
+                  <div style={{ background: importResult.errores.length > 0 ? '#fef2f2' : '#f1f5f9', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: importResult.errores.length > 0 ? '#dc2626' : '#64748b' }}>{importResult.errores.length}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>Errores</div>
+                  </div>
+                  <div style={{ background: '#f0f9ff', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#2563eb' }}>{importResult.contactos_creados}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b' }}>Contactos creados</div>
+                  </div>
+                </div>
+
+                {importResult.warnings.length > 0 && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#d97706' }}>
+                      Advertencias ({importResult.warnings.length})
+                    </h4>
+                    <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: '12px', background: '#fffbeb', borderRadius: '8px', padding: '12px' }}>
+                      {importResult.warnings.slice(0, 20).map((w, i) => (
+                        <div key={i} style={{ marginBottom: '4px', color: '#92400e' }}>
+                          Fila {w.fila} (#{w.numero_cierre}): {w.warning}
+                        </div>
+                      ))}
+                      {importResult.warnings.length > 20 && (
+                        <div style={{ color: '#92400e', fontStyle: 'italic' }}>
+                          ...y {importResult.warnings.length - 20} más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {importResult.errores.length > 0 && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#dc2626' }}>
+                      Errores ({importResult.errores.length})
+                    </h4>
+                    <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: '12px', background: '#fef2f2', borderRadius: '8px', padding: '12px' }}>
+                      {importResult.errores.slice(0, 20).map((e, i) => (
+                        <div key={i} style={{ marginBottom: '4px', color: '#991b1b' }}>
+                          Fila {e.fila} (#{e.numero_cierre}): {e.error}
+                        </div>
+                      ))}
+                      {importResult.errores.length > 20 && (
+                        <div style={{ color: '#991b1b', fontStyle: 'italic' }}>
+                          ...y {importResult.errores.length - 20} más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn-primary" onClick={() => { setShowImportModal(false); setImportResult(null); setImportPreview(null); setCsvContent(''); }}>
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
