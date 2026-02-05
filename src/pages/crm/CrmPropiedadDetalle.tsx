@@ -64,6 +64,16 @@ export default function CrmPropiedadDetalle() {
   // Estados para modal de documentos
   const [showDocumentosModal, setShowDocumentosModal] = useState(false);
 
+  // Cerrar galería con Escape
+  useEffect(() => {
+    if (!showGallery) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowGallery(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showGallery]);
+
   const tenantActual = user?.tenants?.find(t => t.slug === tenantSlug);
 
   useEffect(() => {
@@ -898,7 +908,9 @@ export default function CrmPropiedadDetalle() {
       {/* Modal de galería */}
       {showGallery && (
         <div className="gallery-modal" onClick={() => setShowGallery(false)}>
-          <button className="close-modal" onClick={() => setShowGallery(false)}>×</button>
+          <button className="close-gallery-btn" onClick={() => setShowGallery(false)}>
+            <X size={24} />
+          </button>
           <div className="gallery-content" onClick={e => e.stopPropagation()}>
             <img src={allImages[selectedImageIndex]} alt="" />
             <button className="nav-btn prev" onClick={() => navigateImage('prev')}>
@@ -2227,23 +2239,27 @@ const styles = `
     padding: 40px;
   }
 
-  .close-modal {
-    position: absolute;
+  .close-gallery-btn {
+    position: fixed;
     top: 20px;
     right: 20px;
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    border: none;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
     color: white;
     font-size: 28px;
     cursor: pointer;
     transition: background 0.2s;
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .close-modal:hover {
-    background: rgba(255,255,255,0.2);
+  .close-gallery-btn:hover {
+    background: rgba(255,255,255,0.3);
   }
 
   .gallery-content {
