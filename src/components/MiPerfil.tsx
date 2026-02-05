@@ -1356,6 +1356,7 @@ export default function MiPerfil({ isOpen, onClose }: MiPerfilProps) {
           cursor: pointer;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
           border: 4px solid white;
+          background: #FFFFFF;
         }
 
         .mi-perfil-avatar {
