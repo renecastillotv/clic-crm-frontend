@@ -2241,7 +2241,7 @@ const styles = `
 
   .close-gallery-btn {
     position: fixed;
-    top: 20px;
+    top: 70px;
     right: 20px;
     width: 48px;
     height: 48px;
